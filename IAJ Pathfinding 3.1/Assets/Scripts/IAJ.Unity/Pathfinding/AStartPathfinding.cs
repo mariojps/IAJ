@@ -80,10 +80,11 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             NodeRecord nodeInOpen = Open.SearchInOpen(childNode);
             NodeRecord nodeInClosed = Closed.SearchInClosed(childNode);
             if (nodeInOpen == null && nodeInClosed == null)
+            {
                 Open.AddToOpen(childNode);
-
+            }
             else if (nodeInOpen != null && childNode.fValue < nodeInOpen.fValue)
-                Open.Replace(nodeInOpen,childNode);
+                Open.Replace(nodeInOpen, childNode);
 
             else if (nodeInClosed != null && childNode.fValue < nodeInClosed.fValue)
             {
@@ -93,20 +94,26 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
         }
 
         public bool Search(out GlobalPath solution, bool returnPartialSolution = false)
-        {
+        { 
+            float startTime = 0.0f;
             int processedNodes = 0;
 			while (Open != null)
             {
-                NodeRecord bestNode = Open.GetBestAndRemove();
+                int OpenSize = Open.All().Count;
+                if (MaxOpenNodes < OpenSize)
+                    MaxOpenNodes = OpenSize;
+                NodeRecord bestNode = Open.PeekBest();
                 if (processedNodes < NodesPerFrame)
                 {
-                    processedNodes++;
                     if (bestNode.Equals(GoalNode))
                     {
                         solution = CalculateSolution(bestNode, false);
                         return true;
                     }
+                    Open.RemoveFromOpen(bestNode);
                     Closed.AddToClosed(bestNode);
+                    TotalExploredNodes++;
+                    processedNodes++;
                     var outConnections = bestNode.node.OutEdgeCount;
                     for (int i = 0; i < outConnections; i++)
                     {
@@ -115,10 +122,12 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 }
                 else if (processedNodes == NodesPerFrame)
                 {
-                    solution = solution = CalculateSolution(bestNode, true); ;
+                    this.TotalProcessingTime = (Time.time - startTime) * 1000; 
+                    solution = solution = CalculateSolution(bestNode, true);
                     return false;
                 }
             }
+            this.TotalProcessingTime = (Time.time - startTime) * 1000;
             solution = null;
 			return true;
         }
