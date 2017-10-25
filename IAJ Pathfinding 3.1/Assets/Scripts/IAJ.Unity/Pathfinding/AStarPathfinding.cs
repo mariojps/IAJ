@@ -95,7 +95,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
 
         public bool Search(out GlobalPath solution, bool returnPartialSolution = false)
         { 
-            float startTime = 0.0f;
+            float startTime = Time.time;
             int processedNodes = 0;
             int OpenSize = 1;
             while (OpenSize > 0)
@@ -108,6 +108,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 {
                     if (bestNode.node.Equals(GoalNode))
                     {
+                        this.TotalProcessingTime = (Time.time - startTime) * 1000;
                         solution = CalculateSolution(bestNode, false);
                         return false;
                     }
@@ -118,7 +119,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                     var outConnections = bestNode.node.OutEdgeCount;
                     for (int i = 0; i < outConnections; i++)
                     {
-                        this.ProcessChildNode(bestNode, bestNode.node.EdgeOut(i), i);
+                        this.ProcessChildNode(bestNode, bestNode.node.EdgeOut(i), i); 
                     }
                 }
                 else if (processedNodes == NodesPerFrame)
