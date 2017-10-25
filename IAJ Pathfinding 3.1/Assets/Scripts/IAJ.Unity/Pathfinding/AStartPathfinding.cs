@@ -97,18 +97,19 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
         { 
             float startTime = 0.0f;
             int processedNodes = 0;
-			while (Open != null)
+            int OpenSize = 1;
+            while (OpenSize > 0)
             {
-                int OpenSize = Open.All().Count;
+                OpenSize = Open.All().Count;
                 if (MaxOpenNodes < OpenSize)
                     MaxOpenNodes = OpenSize;
                 NodeRecord bestNode = Open.PeekBest();
                 if (processedNodes < NodesPerFrame)
                 {
-                    if (bestNode.Equals(GoalNode))
+                    if (bestNode.node.Equals(GoalNode))
                     {
                         solution = CalculateSolution(bestNode, false);
-                        return true;
+                        return false;
                     }
                     Open.RemoveFromOpen(bestNode);
                     Closed.AddToClosed(bestNode);
@@ -124,12 +125,12 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 {
                     this.TotalProcessingTime = (Time.time - startTime) * 1000; 
                     solution = solution = CalculateSolution(bestNode, true);
-                    return false;
+                    return true;
                 }
             }
             this.TotalProcessingTime = (Time.time - startTime) * 1000;
             solution = null;
-			return true;
+            return false;
         }
 
         protected NavigationGraphNode Quantize(Vector3 position)
