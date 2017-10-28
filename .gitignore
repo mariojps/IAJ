@@ -11,6 +11,8 @@ sysinfo.txt
 /Assets/AssetStoreTools*
 *.apk
 *.unitypackage
+*.meta
+*.info
  
 # ===================================== #
 # Visual Studio / MonoDevelop generated #
@@ -29,7 +31,7 @@ sysinfo.txt
 .consulo/
 /*.tmp
 /*.svd
- 
+ *.ide
 # ============ #
 # OS generated #
 # ============ #

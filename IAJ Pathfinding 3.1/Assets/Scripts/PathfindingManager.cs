@@ -6,6 +6,7 @@ using RAIN.Navigation;
 using RAIN.Navigation.NavMesh;
 using RAIN.Navigation.Graph;
 using UnityEditor;
+using System.Collections.Generic;
 using Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures;
 
 public class PathfindingManager : MonoBehaviour {
@@ -28,7 +29,8 @@ public class PathfindingManager : MonoBehaviour {
     private int currentClickNumber;
     
     private GlobalPath currentSolution;
-    private GlobalPath PathSmoothed;
+    private List<Vector3> PathSmoothed;
+    private bool smoothed;
     private bool draw;
 
     //public properties
@@ -73,6 +75,7 @@ public class PathfindingManager : MonoBehaviour {
                     this.startPosition = position;
                     this.currentSolution = null;
                     this.draw = false;
+                    this.smoothed = false;
                 }
                 else
                 {
@@ -83,7 +86,9 @@ public class PathfindingManager : MonoBehaviour {
                     this.currentClickNumber = 1;
                     this.endPosition = position;
                     this.draw = true;
+                    this.smoothed = true;
                     //initialize the search algorithm
+                    this.PathSmoothed = null;
                     this.AStarPathFinding.InitializePathfindingSearch(this.startPosition, this.endPosition);
                 }
 			}
@@ -91,22 +96,32 @@ public class PathfindingManager : MonoBehaviour {
         else if(Input.GetKeyDown(KeyCode.Alpha1))
         {
             this.InitializePathFinding(this.p5.transform.localPosition, this.p6.transform.localPosition);
+            this.PathSmoothed = null;
+            this.smoothed = true;
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             this.InitializePathFinding(this.p1.transform.localPosition, this.p2.transform.localPosition);
+            this.PathSmoothed = null;
+            this.smoothed = true;
         }
         else if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             this.InitializePathFinding(this.p2.transform.localPosition, this.p4.transform.localPosition);
+            this.PathSmoothed = null;
+            this.smoothed = true;
         }
         else if (Input.GetKeyDown(KeyCode.Alpha4))
         {
             this.InitializePathFinding(this.p2.transform.localPosition, this.p5.transform.localPosition);
+            this.PathSmoothed = null;
+            this.smoothed = true;
         }
         else if (Input.GetKeyDown(KeyCode.Alpha5))
         {
             this.InitializePathFinding(this.p1.transform.localPosition, this.p3.transform.localPosition);
+            this.PathSmoothed = null;
+            this.smoothed = true;
         }
 
         //call the pathfinding method if the user specified a new goal
@@ -116,9 +131,9 @@ public class PathfindingManager : MonoBehaviour {
 	    }
         else
         {
-            for(int i=0; i< 100; i++)
+            while(this.smoothed)
             {
-                PathSmoothing(this.currentSolution);
+                this.smoothed = PathSmoothing(this.currentSolution.PathPositions);
             }
         }
             
@@ -149,16 +164,23 @@ public class PathfindingManager : MonoBehaviour {
         }
     }
 
-    void PathSmoothing (GlobalPath path)
+    bool PathSmoothing (List<Vector3> path)
     {
+        bool r= false;
         if (path == null)
-            return;
-        PathSmoothed = path;
-        for (int i= 0; i < PathSmoothed.PathPositions.Count-2; i++)
+            return false;
+
+        PathSmoothed = path; // clone list, this doesn't work
+
+        for (int i= 0; i < PathSmoothed.Count-2; i++)
         {
-            if (!(Physics.Raycast(PathSmoothed.PathPositions[i], (PathSmoothed.PathPositions[i + 2] - PathSmoothed.PathPositions[i]), (PathSmoothed.PathPositions[i + 2] - PathSmoothed.PathPositions[i]).sqrMagnitude)))
-                PathSmoothed.PathPositions.Remove(PathSmoothed.PathPositions[i + 1]);
+            if (!(Physics.Raycast(PathSmoothed[i], (PathSmoothed[i + 2] - PathSmoothed[i]), (PathSmoothed[i + 2] - PathSmoothed[i]).sqrMagnitude)))
+            {
+                PathSmoothed.Remove(PathSmoothed[i + 1]);
+                r = true;
+            }
         }
+        return r;
     }
 
     public void OnDrawGizmos()
@@ -180,7 +202,7 @@ public class PathfindingManager : MonoBehaviour {
             if (this.PathSmoothed != null)
             {
                 var previousPosition = this.startPosition;
-                foreach (var pathPosition in this.PathSmoothed.PathPositions)
+                foreach (var pathPosition in this.PathSmoothed)
                 {
                     Debug.DrawLine(previousPosition, pathPosition, Color.green);
                     previousPosition = pathPosition;
