@@ -25,6 +25,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
         public NavigationGraphNode StartNode { get; protected set; }
         public Vector3 StartPosition { get; protected set; }
         public Vector3 GoalPosition { get; protected set; }
+        public float startTime { get; protected set; }
 
         //heuristic function
         public IHeuristic Heuristic { get; protected set; }
@@ -41,6 +42,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
 
         public virtual void InitializePathfindingSearch(Vector3 startPosition, Vector3 goalPosition)
         {
+            this.startTime = Time.time;
             this.StartPosition = startPosition;
             this.GoalPosition = goalPosition;
             this.StartNode = this.Quantize(this.StartPosition);
@@ -95,7 +97,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
 
         public bool Search(out GlobalPath solution, bool returnPartialSolution = false)
         { 
-            float startTime = Time.time;
+            
             int processedNodes = 0;
             int OpenSize = 1;
             while (OpenSize > 0)
@@ -108,8 +110,9 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 {
                     if (bestNode.node.Equals(GoalNode))
                     {
-                        this.TotalProcessingTime = (Time.time - startTime) * 1000;
+                        this.TotalProcessingTime = (Time.time - startTime);
                         solution = CalculateSolution(bestNode, false);
+                        this.InProgress = false;
                         return false;
                     }
                     Open.RemoveFromOpen(bestNode);
@@ -124,12 +127,12 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 }
                 else if (processedNodes == NodesPerFrame)
                 {
-                    this.TotalProcessingTime = (Time.time - startTime) * 1000; 
-                    solution = solution = CalculateSolution(bestNode, true);
+                    this.TotalProcessingTime = (Time.time - startTime); 
+                    solution = CalculateSolution(bestNode, true);
                     return true;
                 }
             }
-            this.TotalProcessingTime = (Time.time - startTime) * 1000;
+            this.TotalProcessingTime = (Time.time - startTime);
             solution = null;
             return false;
         }

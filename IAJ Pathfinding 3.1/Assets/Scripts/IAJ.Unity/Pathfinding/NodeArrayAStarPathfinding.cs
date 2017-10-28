@@ -25,6 +25,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             float h;
 
             var childNode = connectionEdge.ToNode;
+
             var childNodeRecord = this.NodeRecordArray.GetNodeRecord(childNode);
 
             if (childNodeRecord == null)
@@ -37,12 +38,29 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 {
                     node = childNode,
                     parent = bestNode,
-                    status = NodeStatus.Unvisited
+                    status = NodeStatus.Unvisited,
                 };
                 this.NodeRecordArray.AddSpecialCaseNode(childNodeRecord);
             }
 
+
             //TODO: implement the rest of your code here
+            NodeRecord nodeInOpen = NodeRecordArray.SearchInOpen(childNodeRecord);
+            NodeRecord nodeInClosed = Closed.SearchInClosed(childNodeRecord);
+
+            if (nodeInOpen == null && nodeInClosed == null)
+            {
+                NodeRecordArray.AddToOpen(childNodeRecord);
+            }
+            else if (nodeInOpen != null && childNodeRecord.fValue < nodeInOpen.fValue)
+                NodeRecordArray.Replace(nodeInOpen, childNodeRecord);
+
+            else if (nodeInClosed != null && childNodeRecord.fValue < nodeInClosed.fValue)
+            {
+                NodeRecordArray.RemoveFromClosed(nodeInClosed);
+                NodeRecordArray.AddToOpen(childNodeRecord);
+            }
+       
         }
             
         private List<NavigationGraphNode> GetNodesHack(NavMeshPathGraph graph)

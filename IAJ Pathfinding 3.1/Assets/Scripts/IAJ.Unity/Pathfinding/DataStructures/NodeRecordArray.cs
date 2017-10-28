@@ -10,8 +10,6 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
         private List<NodeRecord> SpecialCaseNodes { get; set; }
         private NodePriorityHeap Open { get; set; }
 
-        ICollection<NodeRecord> Closed { get; set; }
-
         public NodeRecordArray(List<NavigationGraphNode> nodes)
         {
             //this method creates and initializes the NodeRecordArray for all nodes in the Navigation Graph
@@ -71,7 +69,6 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
         {
             //Does nothing. Cause we don't need it.
             //TODO implement
-            throw new NotImplementedException();
         }
 
         public void AddToOpen(NodeRecord nodeRecord)
@@ -79,7 +76,6 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
             nodeRecord.status = NodeStatus.Open;
             Open.AddToOpen(nodeRecord);
             //TODO implement
-            throw new NotImplementedException();
         }
 
         public void AddToClosed(NodeRecord nodeRecord)
@@ -88,14 +84,12 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
                 Open.RemoveFromOpen(nodeRecord);
             nodeRecord.status = NodeStatus.Closed;
             //TODO implement
-            throw new NotImplementedException();
         }
 
         public NodeRecord SearchInOpen(NodeRecord nodeRecord)
         {
-            Open.SearchInOpen(nodeRecord);
+            return Open.SearchInOpen(nodeRecord);
             //TODO implement
-            throw new NotImplementedException();
         }
 
         public NodeRecord SearchInClosed(NodeRecord nodeRecord)
@@ -109,69 +103,60 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
             }
             return null;
             //TODO implement
-            throw new NotImplementedException();
         }
 
         public NodeRecord GetBestAndRemove()
         {
-            Open.GetBestAndRemove();
+            return Open.GetBestAndRemove();
             //TODO implement
-            throw new NotImplementedException();
         }
 
         public NodeRecord PeekBest()
         {
-            Open.PeekBest();
+            return Open.PeekBest();
             //TODO implement
-            throw new NotImplementedException();
         }
 
         public void Replace(NodeRecord nodeToBeReplaced, NodeRecord nodeToReplace)
         {
             Open.Replace(nodeToBeReplaced, nodeToReplace);
             //TODO implement
-            throw new NotImplementedException();
         }
 
         public void RemoveFromOpen(NodeRecord nodeRecord)
         {
             Open.RemoveFromOpen(nodeRecord);
             //TODO implement
-            throw new NotImplementedException();
         }
 
         public void RemoveFromClosed(NodeRecord nodeRecord)
         {
             //There is no closed... What is the point?
             //TODO implement
-            throw new NotImplementedException();
         }
 
         ICollection<NodeRecord> IOpenSet.All()
         {
-            Open.All();
+            return Open.All();
             //TODO implement
-            throw new NotImplementedException();
         }
 
         ICollection<NodeRecord> IClosedSet.All()
         {
-            this.Closed = new ICollection<NodeRecord>();
+            NodePriorityHeap Closed = new NodePriorityHeap();
             foreach (NodeRecord nR in NodeRecords)
             {
                 if (nR.status == NodeStatus.Closed)
-                    Closed.Add(nR);
+                    Closed.AddToOpen(nR);
             }
-            return Closed;
+            return Closed.All();
             //TODO implement
-            throw new NotImplementedException();
         }
 
         public int CountOpen()
         {
-            Open.CountOpen();
+           return Open.CountOpen();
             //TODO implement
-            throw new NotImplementedException();
         }
     }
 }

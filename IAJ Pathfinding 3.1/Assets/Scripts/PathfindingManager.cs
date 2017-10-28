@@ -28,6 +28,7 @@ public class PathfindingManager : MonoBehaviour {
     private int currentClickNumber;
     
     private GlobalPath currentSolution;
+    private GlobalPath PathSmoothed;
     private bool draw;
 
     //public properties
@@ -47,7 +48,7 @@ public class PathfindingManager : MonoBehaviour {
 	{
         this.currentClickNumber = 1;
          
-		this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new AStarPathfinding(NavigationManager.Instance.NavMeshGraphs[0], new SimpleUnorderedNodeList(), new SimpleUnorderedNodeList(), new EuclideanHeuristic()));
+		this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new AStarPathfinding(NavigationManager.Instance.NavMeshGraphs[0],new SimpleUnorderedNodeList(), new SimpleUnorderedNodeList(), new EuclideanHeuristic()));
     }
 
     // Update is called once per frame
@@ -113,7 +114,16 @@ public class PathfindingManager : MonoBehaviour {
 	    {
 	        var finished = this.AStarPathFinding.Search(out this.currentSolution);
 	    }
-	}
+        else
+        {
+            for(int i=0; i< 100; i++)
+            {
+                PathSmoothing(this.currentSolution);
+            }
+        }
+            
+
+    }
 
     public void OnGUI()
     {
@@ -139,6 +149,18 @@ public class PathfindingManager : MonoBehaviour {
         }
     }
 
+    void PathSmoothing (GlobalPath path)
+    {
+        if (path == null)
+            return;
+        PathSmoothed = path;
+        for (int i= 0; i < PathSmoothed.PathPositions.Count-2; i++)
+        {
+            if (!(Physics.Raycast(PathSmoothed.PathPositions[i], (PathSmoothed.PathPositions[i + 2] - PathSmoothed.PathPositions[i]), (PathSmoothed.PathPositions[i + 2] - PathSmoothed.PathPositions[i]).sqrMagnitude)))
+                PathSmoothed.PathPositions.Remove(PathSmoothed.PathPositions[i + 1]);
+        }
+    }
+
     public void OnDrawGizmos()
     {
         if (this.draw)
@@ -150,6 +172,17 @@ public class PathfindingManager : MonoBehaviour {
                 foreach (var pathPosition in this.currentSolution.PathPositions)
                 {
                     Debug.DrawLine(previousPosition, pathPosition, Color.red);
+                    previousPosition = pathPosition;
+                }
+            }
+            
+            //draw the current Solution Path with Path Smoothing if any (for debug purposes)
+            if (this.PathSmoothed != null)
+            {
+                var previousPosition = this.startPosition;
+                foreach (var pathPosition in this.PathSmoothed.PathPositions)
+                {
+                    Debug.DrawLine(previousPosition, pathPosition, Color.green);
                     previousPosition = pathPosition;
                 }
             }
