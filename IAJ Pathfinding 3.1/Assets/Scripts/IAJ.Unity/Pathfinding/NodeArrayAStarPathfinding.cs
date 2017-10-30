@@ -9,7 +9,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
     public class NodeArrayAStarPathFinding : AStarPathfinding
     {
         protected NodeRecordArray NodeRecordArray { get; set; }
-        public NodeArrayAStarPathFinding(NavMeshPathGraph graph, IHeuristic heuristic) : base(graph,null,null,heuristic)
+        public NodeArrayAStarPathFinding(NavMeshPathGraph graph, IHeuristic heuristic) : base(graph, null, null, heuristic)
         {
             //do not change this
             var nodes = this.GetNodesHack(graph);
@@ -20,12 +20,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
 
         protected override void ProcessChildNode(NodeRecord bestNode, NavigationGraphEdge connectionEdge, int edgeIndex)
         {
-            float f;
-            float g;
-            float h;
-
             var childNode = connectionEdge.ToNode;
-
             var childNodeRecord = this.NodeRecordArray.GetNodeRecord(childNode);
 
             if (childNodeRecord == null)
@@ -38,31 +33,32 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 {
                     node = childNode,
                     parent = bestNode,
-                    status = NodeStatus.Unvisited,
+                    status = NodeStatus.Unvisited
                 };
                 this.NodeRecordArray.AddSpecialCaseNode(childNodeRecord);
             }
 
+            childNodeRecord.gValue = bestNode.gValue + (childNode.LocalPosition - bestNode.node.LocalPosition).magnitude;
+            childNodeRecord.hValue = this.Heuristic.H(childNode, this.GoalNode);
+            childNodeRecord.fValue = F(childNodeRecord);
 
-            //TODO: implement the rest of your code here
-            NodeRecord nodeInOpen = NodeRecordArray.SearchInOpen(childNodeRecord);
+            NodeRecord nodeInOpen = Open.SearchInOpen(childNodeRecord);
             NodeRecord nodeInClosed = Closed.SearchInClosed(childNodeRecord);
-
             if (nodeInOpen == null && nodeInClosed == null)
             {
-                NodeRecordArray.AddToOpen(childNodeRecord);
+                Open.AddToOpen(childNodeRecord);
             }
             else if (nodeInOpen != null && childNodeRecord.fValue < nodeInOpen.fValue)
-                NodeRecordArray.Replace(nodeInOpen, childNodeRecord);
+                Open.Replace(nodeInOpen, childNodeRecord);
 
             else if (nodeInClosed != null && childNodeRecord.fValue < nodeInClosed.fValue)
             {
-                NodeRecordArray.RemoveFromClosed(nodeInClosed);
-                NodeRecordArray.AddToOpen(childNodeRecord);
+                Closed.RemoveFromClosed(nodeInClosed);
+                Open.AddToOpen(childNodeRecord);
             }
-       
+
         }
-            
+
         private List<NavigationGraphNode> GetNodesHack(NavMeshPathGraph graph)
         {
             //this hack is needed because in order to implement NodeArrayA* you need to have full acess to all the nodes in the navigation graph in the beginning of the search
@@ -71,7 +67,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             //using reflection is not very efficient, but it is ok because this is only called once in the creation of the class
             //by the way, NavMeshPathGraph is a derived class from RAINNavigationGraph class and the _pathNodes field is defined in the base class,
             //that's why we're using the type of the base class in the reflection call
-            return (List<NavigationGraphNode>) Utils.Reflection.GetInstanceField(typeof(RAINNavigationGraph), graph, "_pathNodes");
+            return (List<NavigationGraphNode>)Utils.Reflection.GetInstanceField(typeof(RAINNavigationGraph), graph, "_pathNodes");
         }
     }
 }

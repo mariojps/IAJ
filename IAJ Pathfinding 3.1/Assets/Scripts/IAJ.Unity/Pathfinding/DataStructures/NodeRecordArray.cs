@@ -88,21 +88,21 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 
         public NodeRecord SearchInOpen(NodeRecord nodeRecord)
         {
-            return Open.SearchInOpen(nodeRecord);
-            //TODO implement
+            if (NodeRecords[nodeRecord.node.NodeIndex].status == NodeStatus.Open)
+                return NodeRecords[nodeRecord.node.NodeIndex];
+            else
+                return null;
         }
 
         public NodeRecord SearchInClosed(NodeRecord nodeRecord)
         {
-            foreach (NodeRecord nR in NodeRecords)
-            {
-                if (nR.Equals(nodeRecord) && nodeRecord.status == NodeStatus.Closed)
-                {
-                    return nR;
-                }
-            }
-            return null;
+            if (NodeRecords[nodeRecord.node.NodeIndex].status == NodeStatus.Closed)
+                return NodeRecords[nodeRecord.node.NodeIndex];
+            else
+                return null;
+
             //TODO implement
+            throw new NotImplementedException();
         }
 
         public NodeRecord GetBestAndRemove()

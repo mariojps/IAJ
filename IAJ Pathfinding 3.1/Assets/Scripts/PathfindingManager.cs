@@ -9,12 +9,13 @@ using UnityEditor;
 using System.Collections.Generic;
 using Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures;
 
-public class PathfindingManager : MonoBehaviour {
+public class PathfindingManager : MonoBehaviour
+{
 
-	//public fields to be set in Unity Editor
-	public GameObject endDebugSphere;
+    //public fields to be set in Unity Editor
+    public GameObject endDebugSphere;
     public GameObject startDebugSphere;
-	public Camera camera;
+    public Camera camera;
     public GameObject p1;
     public GameObject p2;
     public GameObject p3;
@@ -22,21 +23,21 @@ public class PathfindingManager : MonoBehaviour {
     public GameObject p5;
     public GameObject p6;
 
-	//private fields for internal use only
-	private Vector3 startPosition;
-	private Vector3 endPosition;
-	private NavMeshPathGraph navMesh;
+    //private fields for internal use only
+    private Vector3 startPosition;
+    private Vector3 endPosition;
+    private NavMeshPathGraph navMesh;
     private int currentClickNumber;
-    
+
     private GlobalPath currentSolution;
     private List<Vector3> PathSmoothed;
     private bool smoothed;
     private bool draw;
 
     //public properties
-    public AStarPathfinding AStarPathFinding { get; private set; }
+    public NodeArrayAStarPathFinding AStarPathFinding { get; private set; }
 
-    public void Initialize(NavMeshPathGraph navMeshGraph, AStarPathfinding pathfindingAlgorithm)
+    public void Initialize(NavMeshPathGraph navMeshGraph, NodeArrayAStarPathFinding pathfindingAlgorithm)
     {
         this.draw = false;
         this.navMesh = navMeshGraph;
@@ -45,24 +46,24 @@ public class PathfindingManager : MonoBehaviour {
         this.AStarPathFinding.NodesPerFrame = 200;
     }
 
-	// Use this for initialization
-	void Awake ()
-	{
+    // Use this for initialization
+    void Awake()
+    {
         this.currentClickNumber = 1;
-         
-		this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new AStarPathfinding(NavigationManager.Instance.NavMeshGraphs[0],new SimpleUnorderedNodeList(), new SimpleUnorderedNodeList(), new EuclideanHeuristic()));
+
+        this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new NodeArrayAStarPathFinding(NavigationManager.Instance.NavMeshGraphs[0], new EuclideanHeuristic()));
     }
 
     // Update is called once per frame
-    void Update () 
+    void Update()
     {
-		Vector3 position;
+        Vector3 position;
 
-		if (Input.GetMouseButtonDown(0)) 
-		{
-			//if there is a valid position
-			if(this.MouseClickPosition(out position))
-			{
+        if (Input.GetMouseButtonDown(0))
+        {
+            //if there is a valid position
+            if (this.MouseClickPosition(out position))
+            {
                 //if this is the first click we're setting the start point
                 if (this.currentClickNumber == 1)
                 {
@@ -91,9 +92,9 @@ public class PathfindingManager : MonoBehaviour {
                     this.PathSmoothed = null;
                     this.AStarPathFinding.InitializePathfindingSearch(this.startPosition, this.endPosition);
                 }
-			}
-		}
-        else if(Input.GetKeyDown(KeyCode.Alpha1))
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             this.InitializePathFinding(this.p5.transform.localPosition, this.p6.transform.localPosition);
             this.PathSmoothed = null;
@@ -126,9 +127,10 @@ public class PathfindingManager : MonoBehaviour {
 
         //call the pathfinding method if the user specified a new goal
         if (this.AStarPathFinding.InProgress)
-	    {
-	        var finished = this.AStarPathFinding.Search(out this.currentSolution);
-	    }
+        {
+            var finished = this.AStarPathFinding.Search(out this.currentSolution);
+        }
+        /*
         else
         {
             while(this.smoothed)
@@ -136,7 +138,7 @@ public class PathfindingManager : MonoBehaviour {
                 this.smoothed = PathSmoothing(this.currentSolution.PathPositions);
             }
         }
-            
+         */
 
     }
 
@@ -144,11 +146,11 @@ public class PathfindingManager : MonoBehaviour {
     {
         if (this.currentSolution != null)
         {
-            var time = this.AStarPathFinding.TotalProcessingTime*1000;
+            var time = this.AStarPathFinding.TotalProcessingTime * 1000;
             float timePerNode;
             if (this.AStarPathFinding.TotalExploredNodes > 0)
             {
-                timePerNode = time/this.AStarPathFinding.TotalExploredNodes;
+                timePerNode = time / this.AStarPathFinding.TotalExploredNodes;
             }
             else
             {
@@ -160,19 +162,20 @@ public class PathfindingManager : MonoBehaviour {
                        + "\nTime per Node (ms):" + timePerNode.ToString("F4");
 
             GUI.contentColor = Color.black;
-            GUI.Label(new Rect(10,10,300,200),text);
+            GUI.Label(new Rect(10, 10, 300, 200), text);
         }
     }
 
-    bool PathSmoothing (List<Vector3> path)
+    bool PathSmoothing(List<Vector3> path)
     {
-        bool r= false;
+        bool r = false;
         if (path == null)
             return false;
 
+        // TODO temos de clonar a lista
         PathSmoothed = path; // clone list, this doesn't work
 
-        for (int i= 0; i < PathSmoothed.Count-2; i++)
+        for (int i = 0; i < PathSmoothed.Count - 2; i++)
         {
             if (!(Physics.Raycast(PathSmoothed[i], (PathSmoothed[i + 2] - PathSmoothed[i]), (PathSmoothed[i + 2] - PathSmoothed[i]).sqrMagnitude)))
             {
@@ -197,7 +200,7 @@ public class PathfindingManager : MonoBehaviour {
                     previousPosition = pathPosition;
                 }
             }
-            
+            /*
             //draw the current Solution Path with Path Smoothing if any (for debug purposes)
             if (this.PathSmoothed != null)
             {
@@ -208,7 +211,7 @@ public class PathfindingManager : MonoBehaviour {
                     previousPosition = pathPosition;
                 }
             }
-
+            */
             //draw the nodes in Open and Closed Sets
             if (this.AStarPathFinding != null)
             {
@@ -235,27 +238,27 @@ public class PathfindingManager : MonoBehaviour {
         }
     }
 
-	private bool MouseClickPosition(out Vector3 position)
-	{
-		RaycastHit hit;
+    private bool MouseClickPosition(out Vector3 position)
+    {
+        RaycastHit hit;
 
-		var ray = this.camera.ScreenPointToRay (Input.mousePosition);
-		//test intersection with objects in the scene
-		if (Physics.Raycast (ray, out hit)) 
-		{
-			//if there is a collision, we will get the collision point
-			position = hit.point;
-			return true;
-		}
+        var ray = this.camera.ScreenPointToRay(Input.mousePosition);
+        //test intersection with objects in the scene
+        if (Physics.Raycast(ray, out hit))
+        {
+            //if there is a collision, we will get the collision point
+            position = hit.point;
+            return true;
+        }
 
-		position = Vector3.zero;
-		//if not the point is not valid
-		return false;
-	}
+        position = Vector3.zero;
+        //if not the point is not valid
+        return false;
+    }
 
     private void InitializePathFinding(Vector3 p1, Vector3 p2)
     {
-       
+
         //show the start sphere, hide the end one
         //this is just a small adjustment to better see the debug sphere
         this.startDebugSphere.transform.position = p1 + Vector3.up;
